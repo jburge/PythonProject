@@ -35,12 +35,8 @@ class BabyNames:
         sub = sub.reset_index(drop = True)
         m = sub.Name[sub['Gender'] == 'M'].reset_index(drop = True).head(n)
         f = sub.Name[sub['Gender'] == 'F'].reset_index(drop = True).head(n)
-        print(f)
         d = {'rank': [x+1 for x in range(0, 10)], 'female': f, 'male':m}
         result = pd.DataFrame(data = d)
-        #mnames = sub.sort('Count', ascending = False).head(n)[['Name', 'Count']]
-        #fnames = sub.Name[sub['Gender'] == 'F'].sort_values(columns = 'Count').head(n)
-        #print(mnames)
         return(result)
 
     def ChangeOfPopularity(self, fromYear, toYear, top = 10):
