@@ -41,8 +41,13 @@ class BabyNames:
         return(result)
 
     def ChangeOfPopularity(self, fromYear, toYear, top = 10):
-        #sub = self.data[]
+        #sub by year
+        #get percentages by year
+        #difference between two points in time
+        #head and tail for increase and drops
+        
         return
+
     def Top5NamesPerYear(self, year, sex = ''):
         n = 5
         if sex not in self.genders:
@@ -68,6 +73,7 @@ class BabyNames:
             rows.append(t)
         result = pd.DataFrame(rows, columns = columns)
         return(result)
+
     def NamePopularityPlot(self, name, yearRange, state = '', sex = ''):
         return
     def NameFlip(self, n = 10):
@@ -92,6 +98,7 @@ lib = BabyNames(df_name)
 # print(lib.data.tail(n=5))
 # print(lib.states)
 # print(lib.years)
-print(lib.Count(state = 'WA', year = 1993))
-print(lib.Top10BabyNames(state = 'WA', year = 1993))
-print(lib.Top5NamesPerYear(year = 1993, sex = 'F'))
+
+# print(lib.Count(state = 'WA', year = 1993))
+# print(lib.Top10BabyNames(state = 'WA', year = 1993))
+# print(lib.Top5NamesPerYear(year = 1993, sex = 'F'))
