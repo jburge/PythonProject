@@ -1,0 +1,11 @@
+SQL Questions
+
+1) Get all features of the 10 most populous countries with at least 50 million pop
+
+2) List the continents in reverse alphabetical order and list the number of countries and population in the continent
+
+3) List the ten most populous cities in the US in descending order with their population
+
+4) For all countries, list the name, official language and the population size that speaks the official language. List the top 10 countries by population that speak the official language.
+
+5) List the 5 most globally spoken languages by population
