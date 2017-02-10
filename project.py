@@ -45,7 +45,15 @@ class BabyNames:
         #get percentages by year
         #difference between two points in time
         #head and tail for increase and drops
-        
+        subFrom = self.data[self.data['Year'] == fromYear].drop(['Gender', 'State', 'Year'], 1).groupby('Name').sum()
+        subFrom['Percent'] = subFrom['Count']/subFrom['Count'].sum() * 100
+
+        subTo = self.data[self.data['Year'] == toYear].drop(['Gender', 'State', 'Year'], 1).groupby('Name').sum()
+        subTo['Percent'] = subTo['Count']/subTo['Count'].sum() * 100
+
+        #full outer join with defaul as 0
+        #sort and horizontal slice
+
         return
 
     def Top5NamesPerYear(self, year, sex = ''):
@@ -102,3 +110,4 @@ lib = BabyNames(df_name)
 # print(lib.Count(state = 'WA', year = 1993))
 # print(lib.Top10BabyNames(state = 'WA', year = 1993))
 # print(lib.Top5NamesPerYear(year = 1993, sex = 'F'))
+print(lib.ChangeOfPopularity(fromYear = 2014, toYear = 2015, top = 10))
