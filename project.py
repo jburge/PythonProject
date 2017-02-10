@@ -39,7 +39,7 @@ class BabyNames:
         d = {'Rank': [x+1 for x in range(0, 10)], 'Female': f, 'Male':m}
         result = pd.DataFrame(data = d, columns = ['Rank', 'Female', 'Male'])
         return(result)
-
+    def ChangeOfPopularity(self, fromYear = 2014, toYear = 2015, top = 10):
         #sub by year
         #get percentages by year
         #difference between two points in time
@@ -64,44 +64,30 @@ class BabyNames:
         return incNames, decNames
 
     def Top5NamesPerYear(self, year, sex = ''):
-        if sex.upper() not in self.genders:
+        n = 5
+        if sex not in self.genders:
             sex = self.genders
         else:
             sex = [sex]
-        if year not in self.years:
-            year = self.years
-        else:
-            year = [year]
-        sub = pd.DataFrame(self.data[self.data['Year'].isin(year) & self.data['Gender'].isin(sex)])
-        sub.drop(['Gender'])
-        sub = sub.groupby(by = ['State', 'Name', 'Year'], as_index = False).agg({'Count':sum}).sort(['State', 'Count'], ascending = [True, False]).reset_index(drop = True)
+        year = [year]
 
+        sub = pd.DataFrame(self.data[self.data['Year'].isin(year) & self.data['Gender'].isin(sex)].groupby(by = ['Name', 'State']).Count.sum(), columns = ['Count'])
+        sub['Name'] = sub.index.get_level_values(0).values
+        sub['State'] = sub.index.get_level_values(1).values
+        sub = sub.reset_index(drop = True)
+        #loop through states to create new DataFrame
+        #index = [x for x in range(0,50)]
+        columns = ['State', 'Rank 1', 'Rank 1 Count', 'Rank 2', 'Rank 2 Count', 'Rank 3', 'Rank 3 Count', 'Rank 4', 'Rank 4 Count', 'Rank 5', 'Rank 5 Count']
+        rows = list()
         for s in self.states:
-
-        # n = 5
-        # if sex not in self.genders:
-        #     sex = self.genders
-        # else:
-        #     sex = [sex]
-        # year = [year]
-
-        # sub = pd.DataFrame(self.data[self.data['Year'].isin(year) & self.data['Gender'].isin(sex)].groupby(by = ['Name', 'State']).Count.sum(), columns = ['Count'])
-        # sub['Name'] = sub.index.get_level_values(0).values
-        # sub['State'] = sub.index.get_level_values(1).values
-        # sub = sub.reset_index(drop = True)
-        # #loop through states to create new DataFrame
-        # #index = [x for x in range(0,50)]
-        # columns = ['State', 'Rank 1', 'Rank 1 Count', 'Rank 2', 'Rank 2 Count', 'Rank 3', 'Rank 3 Count', 'Rank 4', 'Rank 4 Count', 'Rank 5', 'Rank 5 Count']
-        # rows = list()
-        # for s in self.states:
-        #     temp = sub[sub['State'] == s].sort_values('Count', ascending = False).head(n)
-        #     t = {'State': temp.iloc[0, 2]}
-        #     for x in range(0, 5):
-        #         t[columns[2*x+1]] = temp.iloc[x, 1]
-        #         t[columns[2*x+2]] = temp.iloc[x, 0]
-        #     rows.append(t)
-        # result = pd.DataFrame(rows, columns = columns)
-        # return(result)
+            temp = sub[sub['State'] == s].sort_values('Count', ascending = False).head(n)
+            t = {'State': temp.iloc[0, 2]}
+            for x in range(0, 5):
+                t[columns[2*x+1]] = temp.iloc[x, 1]
+                t[columns[2*x+2]] = temp.iloc[x, 0]
+            rows.append(t)
+        result = pd.DataFrame(rows, columns = columns)
+        return(result)
 
     def NamePopularityPlot(self, name, yearRange, state = '', sex = ''):
         return
@@ -160,18 +146,15 @@ def CreateDataFrame(pathToDataDir, df_name):
         df = df.append(sname, ignore_index=True)
     df.to_pickle(df_name)
 
-df_name = '/Users/craigng/Documents/Winter 2017/MSIA 422/Homework/Project 1/names.pickle'
+df_name = '.\\names_data.pkl'
 #CreateDataFrame(r'.\\namesbystate', df_name)
 lib = BabyNames(df_name)
-#print(lib.data.size)
-# print(lib.data.head(n=5))
-# print(lib.data.tail(n=5))
-# print(lib.states)
-# print(lib.years)
-#print(lib.Count(state = 'WA', year = 1993))
+print('Count Test')
+print(lib.Count(state = 'WA', year = 1993))
+print('Top 5 Per Year Test')
 print(lib.Top5NamesPerYear(year = 1987, sex = 'M'))
-# print(lib.Count(state = 'WA', year = 1993))
-# print(lib.Top10BabyNames(state = 'WA', year = 1993))
-# print(lib.Top5NamesPerYear(year = 1993, sex = 'F'))
-#print(lib.ChangeOfPopularity(fromYear = 2014, toYear = 2015, top = 10))
+print(lib.Top5NamesPerYear(year = 1993, sex = 'F'))
+print('Change of Popularity Test')
+print(lib.ChangeOfPopularity(fromYear = 2014, toYear = 2015, top = 10))
+print('Flip Test')
 print(lib.NameFlip())
