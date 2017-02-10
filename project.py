@@ -8,6 +8,7 @@ class BabyNames:
         self.data = pd.read_pickle(file_path)
         self.states = sorted(self.data.State.unique())
         self.years = sorted(self.data.Year.unique())
+        self.genders = sorted(self.data.Gender.unique())
 
     def GetInput(self, _state, _year):
         if _state not in self.states:
@@ -35,14 +36,38 @@ class BabyNames:
         sub = sub.reset_index(drop = True)
         m = sub.Name[sub['Gender'] == 'M'].reset_index(drop = True).head(n)
         f = sub.Name[sub['Gender'] == 'F'].reset_index(drop = True).head(n)
-        d = {'rank': [x+1 for x in range(0, 10)], 'female': f, 'male':m}
-        result = pd.DataFrame(data = d)
+        d = {'Rank': [x+1 for x in range(0, 10)], 'Female': f, 'Male':m}
+        result = pd.DataFrame(data = d, columns = ['Rank', 'Female', 'Male'])
         return(result)
 
     def ChangeOfPopularity(self, fromYear, toYear, top = 10):
+        #sub = self.data[]
         return
     def Top5NamesPerYear(self, year, sex = ''):
-        return
+        n = 5
+        if sex not in self.genders:
+            sex = self.genders
+        else:
+            sex = [sex]
+        year = [year]
+
+        sub = pd.DataFrame(self.data[self.data['Year'].isin(year) & self.data['Gender'].isin(sex)].groupby(by = ['Name', 'State']).Count.sum(), columns = ['Count'])
+        sub['Name'] = sub.index.get_level_values(0).values
+        sub['State'] = sub.index.get_level_values(1).values
+        sub = sub.reset_index(drop = True)
+        #loop through states to create new DataFrame
+        #index = [x for x in range(0,50)]
+        columns = ['State', 'Rank 1', 'Rank 1 Count', 'Rank 2', 'Rank 2 Count', 'Rank 3', 'Rank 3 Count', 'Rank 4', 'Rank 4 Count', 'Rank 5', 'Rank 5 Count']
+        rows = list()
+        for s in self.states:
+            temp = sub[sub['State'] == s].sort_values('Count', ascending = False).head(n)
+            t = {'State': temp.iloc[0, 2]}
+            for x in range(0, 5):
+                t[columns[2*x+1]] = temp.iloc[x, 1]
+                t[columns[2*x+2]] = temp.iloc[x, 0]
+            rows.append(t)
+        result = pd.DataFrame(rows, columns = columns)
+        return(result)
     def NamePopularityPlot(self, name, yearRange, state = '', sex = ''):
         return
     def NameFlip(self, n = 10):
@@ -67,5 +92,6 @@ lib = BabyNames(df_name)
 # print(lib.data.tail(n=5))
 # print(lib.states)
 # print(lib.years)
-#print(lib.Count(state = 'WA', year = 1993))
+print(lib.Count(state = 'WA', year = 1993))
 print(lib.Top10BabyNames(state = 'WA', year = 1993))
+print(lib.Top5NamesPerYear(year = 1993, sex = 'F'))
