@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-
+from matplotlib import pyplot as plt
 
 
 class BabyNames:
@@ -67,37 +67,43 @@ class BabyNames:
             year = [year]
         sub = pd.DataFrame(self.data[self.data['Year'].isin(year) & self.data['Gender'].isin(sex)])
         sub.drop(['Gender'])
-        sub = sub.groupby(by = ['State', 'Name', 'Year'], as_index = False).agg({'Count':sum}).sort(['State', 'Count'], ascending = [True, False]).reset_index(drop = True)
+        sub = sub.groupby(by = ['State', 'Name', 'Year'], as_index = False).agg({'Count':sum}).sort_values(['State', 'Count'], ascending = [True, False]).reset_index(drop = True)
         
+        list_ = []
+        headers = ['State', 'Rank 1', 'Num 1', 'Rank 2', 'Num 2', 'Rank 3', 'Num 3', 'Rank 4', 'Num 4', 'Rank 5', 'Num 5']
+
         for s in self.states:
-            
-        # n = 5
-        # if sex not in self.genders:
-        #     sex = self.genders
-        # else:
-        #     sex = [sex]
-        # year = [year]
+            sub_group = sub[sub.State == s].head(n = 5)
+            temp_dict = {'State': s}
+            for i in range(0, 5):
+                temp_dict[headers[i * 2 + 1]] = sub_group.iloc[i, 1]
+                temp_dict[headers[i * 2 + 2]] = sub_group.iloc[i, 3]
+            list_.append(temp_dict)
 
-        # sub = pd.DataFrame(self.data[self.data['Year'].isin(year) & self.data['Gender'].isin(sex)].groupby(by = ['Name', 'State']).Count.sum(), columns = ['Count'])
-        # sub['Name'] = sub.index.get_level_values(0).values
-        # sub['State'] = sub.index.get_level_values(1).values
-        # sub = sub.reset_index(drop = True)
-        # #loop through states to create new DataFrame
-        # #index = [x for x in range(0,50)]
-        # columns = ['State', 'Rank 1', 'Rank 1 Count', 'Rank 2', 'Rank 2 Count', 'Rank 3', 'Rank 3 Count', 'Rank 4', 'Rank 4 Count', 'Rank 5', 'Rank 5 Count']
-        # rows = list()
-        # for s in self.states:
-        #     temp = sub[sub['State'] == s].sort_values('Count', ascending = False).head(n)
-        #     t = {'State': temp.iloc[0, 2]}
-        #     for x in range(0, 5):
-        #         t[columns[2*x+1]] = temp.iloc[x, 1]
-        #         t[columns[2*x+2]] = temp.iloc[x, 0]
-        #     rows.append(t)
-        # result = pd.DataFrame(rows, columns = columns)
-        # return(result)
+        df = pd.DataFrame(list_, columns = headers)
+        return(df)
 
-    def NamePopularityPlot(self, name, yearRange, state = '', sex = ''):
-        return
+    def NamePopularityPlot(self, name = 'Jim', yearRange = (2000, 2015), state = 'IL', sex = 'M'):
+        range_ = [s for s in self.years if s >= yearRange[0] and s <= yearRange[1]]
+        sub = self.data[(self.data['State'] == state) & (self.data['Gender'] == sex) & (self.data['Year'].isin(range_))].reset_index(drop = True)
+        name_count = {}
+        for i in range_:
+            name_count[i] = self.data[(self.data['Year'] == i) & (self.data['Name'] == name)].iloc[0,4]
+        grouped = sub.groupby(by = ['Year']).agg({'Count':sum})
+        year_total = {}
+        for i in range_:
+            year_total[i] = grouped.ix[i]['Count']
+        percentages = {}
+        for i in range_:
+            percentages[i] = name_count[i] / year_total[i]
+        final_df = pd.DataFrame(percentages, index = [0])
+        ax = final_df.T.plot(title = 'Popularity of ' + name + ' in ' + state + ' from ' + str(yearRange[0]) + ' to ' + str(yearRange[1]))
+        vals = ax.get_yticks()
+        ax.set_yticklabels(['{:1.2f}%'.format(x*100) for x in vals])
+        ax.xaxis.set_ticks(range_)
+        ax.set_xticklabels(labels = range_, rotation = 30)
+        ax.legend(name, loc = 'best')
+        plt.show()
 
     def NameFlip(self, n = 10):
         return
@@ -123,9 +129,10 @@ lib = BabyNames(df_name)
 # print(lib.data.tail(n=5))
 # print(lib.states)
 # print(lib.years)
-#print(lib.Count(state = 'WA', year = 1993))
-print(lib.Top5NamesPerYear(year = 1987, sex = 'M'))
+# print(lib.Count(state = 'WA', year = 1993))
+# print(lib.Top5NamesPerYear(year = 1993))
 # print(lib.Count(state = 'WA', year = 1993))
 # print(lib.Top10BabyNames(state = 'WA', year = 1993))
 # print(lib.Top5NamesPerYear(year = 1993, sex = 'F'))
 # print(lib.ChangeOfPopularity(fromYear = 2014, toYear = 2015, top = 10))
+lib.NamePopularityPlot()
