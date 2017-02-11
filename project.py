@@ -133,12 +133,14 @@ class BabyNames:
         for i in range_:
             percentages[i] = name_count[i] / year_total[i]
         final_df = pd.DataFrame(percentages, index = [0])
-        ax = final_df.T.plot(title = 'Popularity of ' + name + ' in ' + state + ' from ' + str(yearRange[0]) + ' to ' + str(yearRange[1]))
+        ax = final_df.T.plot(title = 'Popularity of ' + name + ' in ' + state + ' from ' + str(yearRange[0]) + ' to ' + str(yearRange[1]), figsize = (8, 6))
         vals = ax.get_yticks()
         ax.set_yticklabels(['{:1.2f}%'.format(x*100) for x in vals])
         ax.xaxis.set_ticks(range_)
         ax.set_xticklabels(labels = range_, rotation = 30)
-        ax.legend(name, loc = 'best')
+        ax.set_xlabel('Years', size = 16)
+        ax.set_ylabel('% of Gender Population', size = 16)
+        ax.legend([name,], loc = 'best', fontsize = 12)
         plt.show()
 
     def NameFlip(self, n = 10):
@@ -195,7 +197,7 @@ def CreateDataFrame(pathToDataDir, df_name):
         df = df.append(sname, ignore_index=True)
     df.to_pickle(df_name)
 
-df_name = '.\\names_data.pkl'
+df_name = '/Users/craigng/Documents/Winter 2017/MSIA 422/Homework/Project 1/names.pickle'
 #CreateDataFrame(r'.\\namesbystate', df_name)
 lib = BabyNames(df_name)
 
