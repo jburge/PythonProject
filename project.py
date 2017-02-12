@@ -29,8 +29,8 @@ class BabyNames:
     def Top10BabyNames(self, state = '', year = ''):
         n = 10
         state, year = self.GetInput(state, year)
-        sub = pd.DataFrame(self.data[self.data['State'].isin(state) & self.data['Year'].isin(year)].groupby(by = ['Name', 'Gender']).Count.sum(), columns = ['Count'])
-        sub = sub.sort_values('Count', ascending = False)
+        sub = pd.DataFrame(self.data[self.data['State'].isin(state) & self.data['Year'].isin(year)])
+        sub = sub.groupby(by = ['Name', 'Gender']).agg({'Count':sum}).sort_values('Count', ascending = False)
         sub['Name'] = sub.index.get_level_values(0).values
         sub['Gender'] = sub.index.get_level_values(1).values
         sub = sub.reset_index(drop = True)
@@ -74,10 +74,9 @@ class BabyNames:
             year = self.years
         else:
             year = [year]
-        sub = pd.DataFrame(self.data[self.data['Year'].isin(year) & self.data['Gender'].isin(sex)])
-        sub.drop(['Gender'])
+        sub = pd.DataFrame(self.data[self.data['Year'].isin(year) & self.data['Gender'].isin(sex)]).drop('Gender', 1)
         sub = sub.groupby(by = ['State', 'Name', 'Year'], as_index = False).agg({'Count':sum}).sort_values(['State', 'Count'], ascending = [True, False]).reset_index(drop = True)
-        
+
         list_ = []
         headers = ['State', 'Rank 1', 'Num 1', 'Rank 2', 'Num 2', 'Rank 3', 'Num 3', 'Rank 4', 'Num 4', 'Rank 5', 'Num 5']
 
@@ -92,35 +91,8 @@ class BabyNames:
         df = pd.DataFrame(list_, columns = headers)
         return(df)
 
-        # if sex not in self.genders:
-        #     sex = self.genders
-        # else:
-        #     sex = [sex]
-        # if year not in self.years:
-        #     year = self.years
-        # else:
-        #     year = [year]
-
-        # sub = pd.DataFrame(self.data[self.data['Year'].isin(year) & self.data['Gender'].isin(sex)].groupby(by = ['Name', 'State']).Count.sum(), columns = ['Count'])
-        # sub['Name'] = sub.index.get_level_values(0).values
-        # sub['State'] = sub.index.get_level_values(1).values
-        # sub = sub.reset_index(drop = True)
-        # #loop through states to create new DataFrame
-        # #index = [x for x in range(0,50)]
-        # columns = ['State', 'Rank 1', 'Rank 1 Count', 'Rank 2', 'Rank 2 Count', 'Rank 3', 'Rank 3 Count', 'Rank 4', 'Rank 4 Count', 'Rank 5', 'Rank 5 Count']
-        # rows = list()
-        # for s in self.states:
-        #     temp = sub[sub['State'] == s].sort_values('Count', ascending = False).head(n)
-        #     t = {'State': temp.iloc[0, 2]}
-        #     for x in range(0, 5):
-        #         t[columns[2*x+1]] = temp.iloc[x, 1]
-        #         t[columns[2*x+2]] = temp.iloc[x, 0]
-        #     rows.append(t)
-        # result = pd.DataFrame(rows, columns = columns)
-        # return(result)
-
     def NamePopularityPlot(self, name = 'Jim', yearRange = (2000, 2015), state = 'IL', sex = 'M'):
-        range_ = [s for s in self.years if s >= yearRange[0] and s <= yearRange[1]]
+        range_ = [int(s) for s in self.years if s >= yearRange[0] and s <= yearRange[1]]
         sub = self.data[(self.data['State'] == state) & (self.data['Gender'] == sex) & (self.data['Year'].isin(range_))].reset_index(drop = True)
         name_count = {}
         for i in range_:
@@ -135,7 +107,7 @@ class BabyNames:
         final_df = pd.DataFrame(percentages, index = [0])
         ax = final_df.T.plot(title = 'Popularity of ' + name + ' in ' + state + ' from ' + str(yearRange[0]) + ' to ' + str(yearRange[1]), figsize = (8, 6))
         vals = ax.get_yticks()
-        ax.set_yticklabels(['{:1.2f}%'.format(x*100) for x in vals])
+        ax.set_yticklabels(['{:1.3f}%'.format(x*100) for x in vals])
         ax.xaxis.set_ticks(range_)
         ax.set_xticklabels(labels = range_, rotation = 30)
         ax.set_xlabel('Years', size = 16)
@@ -197,17 +169,22 @@ def CreateDataFrame(pathToDataDir, df_name):
         df = df.append(sname, ignore_index=True)
     df.to_pickle(df_name)
 
-df_name = '/Users/craigng/Documents/Winter 2017/MSIA 422/Homework/Project 1/names.pickle'
+df_name = './names_data.pkl'
 #CreateDataFrame(r'.\\namesbystate', df_name)
 lib = BabyNames(df_name)
 
-# print('Count Test')
-# print(lib.Count(state = 'WA', year = 1993))
-# print('Top 5 Per Year Test')
-# print(lib.Top5NamesPerYear(year = 1987, sex = 'M'))
-# print(lib.Top5NamesPerYear(year = 1993, sex = 'F'))
-# print('Change of Popularity Test')
-# print(lib.ChangeOfPopularity(fromYear = 2014, toYear = 2015, top = 10))
-# print('Flip Test')
-# print(lib.NameFlip())
-lib.NamePopularityPlot()
+def TestFunctions():
+    print('Count Test')
+    print(lib.Count(state = 'WA', year = 1993))
+    print('Top 10 by state and year')
+    print(lib.Top10BabyNames(state = 'WA', year = 1993))
+    print('Top 5 Per Year Test')
+    print(lib.Top5NamesPerYear(year = 1987, sex = 'M'))
+    print(lib.Top5NamesPerYear(year = 1993))
+    print('Change of Popularity Test')
+    print(lib.ChangeOfPopularity(fromYear = 2014, toYear = 2015, top = 10))
+    print('Flip Test')
+    print(lib.NameFlip())
+    lib.NamePopularityPlot(name = 'Jonathan', state = 'WA')
+
+TestFunctions()
