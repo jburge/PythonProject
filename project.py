@@ -90,6 +90,15 @@ class BabyNames:
         return(result)
 
     def NamePopularityPlot(self, name, yearRange, state = '', sex = ''):
+        sub = pd.DataFrame(self.data[(self.data['Gender'] == sex) & (self.data['State'] == state) & (self.data['Year'] >= yearRange[0]) & (self.data['Year'] <= yearRange[1])])
+        pop = sub.groupby('Year').Count.sum()
+        sub = sub[sub['Name'] == name]
+        yearDict = {}
+        for x in pop.index.get_level_values(0):
+            yearDict[x]=  pop[[x]]
+        sub['Prop'] = sub['Count']/yearDict[sub['Year']]
+        print(sub)
+
         return
 
     def NameFlip(self, n = 10):
@@ -149,12 +158,15 @@ def CreateDataFrame(pathToDataDir, df_name):
 df_name = '.\\names_data.pkl'
 #CreateDataFrame(r'.\\namesbystate', df_name)
 lib = BabyNames(df_name)
-print('Count Test')
-print(lib.Count(state = 'WA', year = 1993))
-print('Top 5 Per Year Test')
-print(lib.Top5NamesPerYear(year = 1987, sex = 'M'))
-print(lib.Top5NamesPerYear(year = 1993, sex = 'F'))
-print('Change of Popularity Test')
-print(lib.ChangeOfPopularity(fromYear = 2014, toYear = 2015, top = 10))
-print('Flip Test')
-print(lib.NameFlip())
+lib.NamePopularityPlot(name ='John', yearRange = (2005, 2010), state ='WA', sex = 'M')
+
+def RunTests(lib):
+    print('Count Test')
+    print(lib.Count(state = 'WA', year = 1993))
+    print('Top 5 Per Year Test')
+    print(lib.Top5NamesPerYear(year = 1987, sex = 'M'))
+    print(lib.Top5NamesPerYear(year = 1993))
+    print('Change of Popularity Test')
+    print(lib.ChangeOfPopularity(fromYear = 2014, toYear = 2015, top = 10))
+    print('Flip Test')
+    print(lib.NameFlip())
