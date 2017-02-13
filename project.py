@@ -79,21 +79,22 @@ class BabyNames:
             fromYear = self.minYear
         if toYear not in self.years:
             toYear = self.maxYear
+        # Get data from prior year
         subFrom = self.data[self.data['Year'] == fromYear].drop(['Gender', 'State', 'Year'], 1).groupby('Name').sum()
         subFrom['Percent'] = subFrom['Count']/subFrom['Count'].sum() * 100
         subFrom['Name'] = subFrom.index.get_level_values(0).values
         subFrom = subFrom.reset_index(drop = True)
-
+        # Get data from post year
         subTo = self.data[self.data['Year'] == toYear].drop(['Gender', 'State', 'Year'], 1).groupby('Name').sum()
         subTo['Percent'] = subTo['Count']/subTo['Count'].sum() * 100
         subTo['Name'] = subTo.index.get_level_values(0).values
         subTo = subTo.reset_index(drop = True)
-
+        # Compute change in popularity (in terms of percent)
         temp = subFrom.merge(subTo, how = 'outer', on = 'Name')
         temp = temp.fillna(value = 0)
         temp['Delta'] = -temp['Percent_x'] + temp['Percent_y']
         temp = temp.sort_values('Delta', ascending = False)
-
+        # Return values of interest
         incNames = temp.ix[:,['Name', 'Delta']].head(top).reset_index(drop = True)
         decNames = temp.ix[:,['Name', 'Delta']].tail(top).sort_values('Delta').reset_index(drop = True)
         return incNames, decNames
@@ -140,13 +141,6 @@ class BabyNames:
             sex: Which gender to consider
         Returns: Although no value is returned, a plot is generated to display the name's popularity over the given time period.
         '''
-        # state = self.ForceState(state)
-        # if state not in self.states:
-        #     state = self.states
-        # if sex not in self.genders:
-        #     sex = self.genders
-        # else:
-        #     sex = [sex]
         range_ = [int(s) for s in self.years if s >= yearRange[0] and s <= yearRange[1]]
         sub = self.data[(self.data['State'] == state) & (self.data['Gender'] == sex) & (self.data['Year'].isin(range_))].reset_index(drop = True)
         name_count = {}
@@ -178,7 +172,7 @@ class BabyNames:
         '''
         fromYear = min(self.years)
         toYear = max(self.years)
-
+        # Get data from prior year
         subFrom = self.data[self.data['Year'] == fromYear].drop(['State', 'Year'], 1).groupby(['Name', 'Gender']).sum()
         subFrom['Name'] = subFrom.index.get_level_values(0).values
         subFrom['Gender'] = subFrom.index.get_level_values(1).values
@@ -193,7 +187,7 @@ class BabyNames:
         subFrom['Prop_F'] = subFrom['Count_y']/subFrom['Total']
         subFrom = subFrom.drop(['Count_x', 'Gender_x', 'Count_y', 'Gender_y'], 1)
         subFrom = subFrom.reset_index(drop = True)
-        ###
+        # Get data from post year
         subTo = self.data[self.data['Year'] == toYear].drop(['State', 'Year'], 1).groupby(['Name', 'Gender']).sum()
         subTo['Name'] = subTo.index.get_level_values(0).values
         subTo['Gender'] = subTo.index.get_level_values(1).values
@@ -208,7 +202,7 @@ class BabyNames:
         subTo['Prop_F'] = subTo['Count_y']/subTo['Total']
         subTo = subTo.drop(['Count_x', 'Gender_x', 'Count_y', 'Gender_y'],1)
         subTo = subTo.reset_index(drop = True)
-        ###
+        # Compute change in name usage
         subDelta = subFrom.merge(subTo, on = 'Name')
         subDelta['Delta'] = -subDelta['Prop_M_x'] + subDelta['Prop_M_y']
         subDelta['Abs_Delta'] = abs(subDelta['Delta'])
